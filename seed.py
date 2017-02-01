@@ -38,7 +38,7 @@ def load_users():
 def load_movies():
     """Load movies from u.item into database."""
 
-    User.query.delete()
+    Movie.query.delete()
 
     for row in open("seed_data/u.item"):
         row = row.rstrip()
@@ -50,7 +50,7 @@ def load_movies():
         else:
             released = None
 
-        movie = Movie(movie_id=movie_id, 
+        movie = Movie(movie_id=movie_id,
                       title=title,
                       released=released,
                       imdb=imdb)
@@ -62,6 +62,21 @@ def load_movies():
 
 def load_ratings():
     """Load ratings from u.data into database."""
+
+    Rating.query.delete()
+
+    for row in open("seed_data/u.data"):
+        row = row.rstrip()
+        user_id, movie_id, score, _ = row.split()
+
+        rating = Rating(user_id=user_id,
+                        movie_id=movie_id,
+                        score=score)
+
+        db.session.add(rating)
+        # print user_id, 'added'
+
+    db.session.commit()
 
 
 def set_val_user_id():

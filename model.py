@@ -26,8 +26,10 @@ class User(db.Model):
     def __repr__(self):
         """Provide helpful representation when printed"""
 
-        return "<User user_id=%s email=%s>" % (self.user_id,
-                                            self.email)
+        return "<User user_id=%s email=%s age=%s zipcode=%s>" % (self.user_id,
+                                                                 self.email,
+                                                                 self.age,
+                                                                 self.zipcode)
 
 # Put your Movie and Rating model classes here.
 
@@ -41,7 +43,14 @@ class Movie(db.Model):
     released = db.Column(db.DateTime, nullable=True)
     imdb = db.Column(db.String(200), nullable=True)
 
-#(psycopg2.DataError) value too long for type character varying(100)
+    def __repr__(self):
+        """Provide helpful representation when printed"""
+
+        return "<Movie movie_id=%s title=%s released=%s imdb=%s>" % (self.movie_id,
+                                                                     self.title,
+                                                                     self.released,
+                                                                     self.imdb)
+
 
 
 class Rating(db.Model):
@@ -50,9 +59,27 @@ class Rating(db.Model):
     __tablename__ = "ratings"
 
     rating_id = db.Column(db.Integer, autoincrement=True, primary_key=True)
-    movie_id = db.Column(db.Integer,)
-    user_id = db.Column(db.Integer)
+    movie_id = db.Column(db.Integer,
+                         db.ForeignKey("movies.movie_id"))
+    user_id = db.Column(db.Integer,
+                        db.ForeignKey("users.user_id"))
     score = db.Column(db.Integer, nullable=True)
+
+    user = db.relationship("User",
+                            backref=db.backref("ratings",
+                                                order_by=rating_id))
+
+    movie = db.relationship("Movie", 
+                            backref=db.backref("ratings",
+                                                order_by=rating_id))
+
+    def __repr__(self):
+        """Provide helpful representation when printed"""
+
+        return "<Rating rating_id=%s movie_id=%s user_id=%s score=%s>" % (self.rating_id,
+                                                                          self.movie_id,
+                                                                          self.user_id,
+                                                                          self.score)
 
 ##############################################################################
 # Helper functions
@@ -63,6 +90,7 @@ def connect_to_db(app):
 
     # Configure to use our PstgreSQL database
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///ratings'
+    app.config['SQLALCHEMY_ECHO'] = True
     db.app = app
     db.init_app(app)
 
